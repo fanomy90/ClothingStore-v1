@@ -1,42 +1,19 @@
 version: "3.9"
 
 services:
-  store_postgres:
-    image: postgres:15
-    container_name: store_postgres
+  store:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: store_container
+    ports:
+      - "8008:8008"
     volumes:
-      - ~/.pg/pg_data/store:/var/lib/postgresql/data
+      - ./store:/store
     env_file:
       - .env
-  store:
-      build:
-        dockerfile: Dockerfile
-        context: .
-      image: store_django:latest
-      container_name: store_django
-      depends_on:
-        - store_postgres
-      volumes:
-        - static_volume:/store/static
-        - media_volume:/store/media
-      env_file:
-        - .env
-      command:
-        #выполняем миграции и запускаем веб сервер
-        bash -c "./manage.py collectstatic --noinput && ./manage.py makemigrations && ./manage.py migrate && gunicorn -b 0.0.0.0:8000 store.wsgi:application"
-  nginx:
-      build:
-        dockerfile: ./Dockerfile
-        context: ./docker/nginx/
-      container_name: store_nginx
-      image: store_nginx
-      volumes:
-        - static_volume:/store/static
-        - media_volume:/store/media
-      depends_on:
-        - store
-      ports:
-        - "${NGINX_EXTERNAL_PORT}:80"
+    command: bash -c "store/manage.py runserver 0.0.0.0:8008"
+
 volumes:
-    static_volume:
-    media_volume:
+  static_volume:
+  media_volume:
