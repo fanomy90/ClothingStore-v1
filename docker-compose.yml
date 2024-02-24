@@ -9,7 +9,8 @@ services:
     ports:
       - "8008:8008"
     volumes:
-      - ./store:/store
+      #- ./store:/store
+      - ./store:/app/store
     env_file:
       - .env
     command: bash -c "store/manage.py runserver 0.0.0.0:8008"
